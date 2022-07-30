@@ -147,12 +147,12 @@ echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
 echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
 
 # zsh como shell
-chsh -s /bin/zsh "$name" >/dev/null 2>&1
-sudo -u "$name" mkdir -p "/home/$name/.cache/zsh/"
-sudo -u "$name" mkdir -p "/home/$name/.config/abook/"
-sudo -u "$name" mkdir -p "/home/$name/.config/mpd/playlists/"
+chsh -s /bin/zsh "$user" >/dev/null 2>&1
+sudo -u "$user" mkdir -p "/home/$user/.cache/zsh/"
+sudo -u "$user" mkdir -p "/home/$user/.config/abook/"
+sudo -u "$user" mkdir -p "/home/$user/.config/mpd/playlists/"
 
-# runit
+# artix con runit
 # dbus-uuidgen > /var/lib/dbus/machine-id
 
 echo -e "Instalacion terminada :)"
