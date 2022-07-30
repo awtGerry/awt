@@ -4,6 +4,7 @@ echo -e "Instalador de dotfiles y programas para arch/artix linux"
 echo -e "## Para que el instalador funcione por completo tiene que ser ejecutado con permisos de root ##"
 
 dotfiles="https://github.com/awtGerry/.dotfiles"
+programas="https://raw.githubusercontent.com/awtGerry/awt/master/programas.csv"
 
 # Usuario ingresa nombre y contrasena
 # TODO: implementar esto para que sea desde una instalacion en blanco de arch.
@@ -53,9 +54,7 @@ ask_install() { # Preguntar si se debe instalar programas
 instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
     # primero instalar yay como aur helper
     installyay || salir "No se pudo instalar yay"
-    # csv de programas
-    programas="https://raw.githubusercontent.com/awtGerry/awt/master/programas.csv"
-    ([ -f "$programas" ] && cp "$programas" /tmp/programas.csv) || curl -Ls "$programas"
+    ([ -f "$programas" ] && cp "$programas" /tmp/programas.csv) || curl -Ls "$programas" | sed '/^#/d' > /tmp/programas.csv
     aur_installed=$(pacman -Qqm)
     # loop
     while IFS=, read -r tag program comment; do
@@ -65,7 +64,7 @@ instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
             "G") git_installer "$program" "$comment" ;;
             *) pacman_installer "$program" "$comment" ;;
         esac
-    done < /tmp/progs.csv
+    done < /tmp/programas.csv ;
 }
 
 installyay() { # aur helper para instalar otros programas
@@ -103,13 +102,13 @@ git_instalador() { # algo falla aqui...
 
 dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
     while true; do
-        read -p "> Instalar awtgerry dotfiles? [y/n] " yesno
+        read -p "> Instalar awtgerry dotfiles? (ten en cuenta que configuracion anterior se perdera) [y/n] " yesno
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando dotfiles"
                 cd "/home/$user"
                 git clone "$dotfiles"
-                cp -rsf ".dotfiles/." "~"
+                cp -rf ".dotfiles/." "~"
                 rm -rf ~/install.sh ~/.git ~/README.md; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
@@ -124,7 +123,7 @@ add_battery() {
         case $yesno in
             [Yy]* ) sed -i 's/# upperbar="$upperbar$(dwm_battery)"/upperbar="$upperbar$(dwm_battery)"/' ~/.config/dwm/dwmbar/dwm_bar.sh; \
                 sed -i 's/# batdunst --status &/batdunst --status &' ~/.xprofile; break;;
-            [Nn]* ) exit;;
+            [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
         esac
     done
@@ -141,5 +140,17 @@ sed -i "s/gerry/$user/" ~/.config/nvim/init.lua
 echo -e "Adios a la campanita enfadosa"
 rmmod pcspkr
 echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf ;}
+
+# notificaciones de brave
+echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
+
+# zsh como shell
+chsh -s /bin/zsh "$name" >/dev/null 2>&1
+sudo -u "$name" mkdir -p "/home/$name/.cache/zsh/"
+sudo -u "$name" mkdir -p "/home/$name/.config/abook/"
+sudo -u "$name" mkdir -p "/home/$name/.config/mpd/playlists/"
+
+# runit
+# dbus-uuidgen > /var/lib/dbus/machine-id
 
 echo -e "Instalacion terminada :)"
