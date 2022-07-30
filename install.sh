@@ -54,7 +54,7 @@ instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
     # primero instalar yay como aur helper
     installyay || salir "No se pudo instalar yay"
     # csv de programas
-    programas="https://raw.githubusercontent.com/awtGerry/.dotfiles/master/programas.csv"
+    programas="https://raw.githubusercontent.com/awtGerry/awt/master/programas.csv"
     ([ -f "$programas" ] && cp "$programas" /tmp/programas.csv) || curl -Ls "$programas"
     aur_installed=$(pacman -Qqm)
     # loop
