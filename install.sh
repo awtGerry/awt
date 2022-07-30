@@ -55,9 +55,11 @@ instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
     # primero instalar yay como aur helper
     installyay || salir "No se pudo instalar yay"
     ([ -f "$programas" ] && cp "$programas" /tmp/programas.csv) || curl -Ls "$programas" | sed '/^#/d' > /tmp/programas.csv
+    total=$(wc -l < /tmp/programas.csv)
     aur_installed=$(pacman -Qqm)
     # loop
     while IFS=, read -r tag program comment; do
+        n=$((n+1))
         echo "$comment" | grep -q "^\".*\"$" && comment="$(echo "$comment" | sed -E "s/(^\"|\"$)//g")"
         case "$tag" in
             "A") yay_installer "$program" "$comment" ;;
@@ -78,12 +80,12 @@ installyay() { # aur helper para instalar otros programas
 }
 
 pacman_installer() {
-    echo -e "\nInstalando \`\033[1m$1\033[0m\` $2" # 1 programa # 2 comment
+    echo -e "\nInstalando \`\033[1m$1\033[0m\` $2 ($n de $total)" # 1 programa # 2 comment
     pacman --noconfirm --needed -S "$1" >/dev/null 2>&1
 }
 
 yay_installer() {
-    echo -e "\nInstalando ($n de $total) desde la AUR \`\033[1m$1\033[0m\` $2"
+    echo -e "\nInstalando desde la AUR \`\033[1m$1\033[0m\` $2 ($n de $total)"
     echo "$aur_installed" | grep -q "^$1$" && return 1
     yay -S --noconfirm "$1" >/dev/null 2>&1
 }
@@ -91,7 +93,7 @@ yay_installer() {
 git_instalador() { # algo falla aqui...
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
-    echo -e "\nInstalando ($n de $total) usando git y make. $(basename "$1") $2"
+    echo -e "\nInstalando usando git y make. $(basename "$1") $2 ($n de $total)"
     cd "$repodir";
     git clone $1
     cd "$dir" || exit 1
@@ -121,8 +123,8 @@ add_battery() {
     while true; do
         read -p "> Desea agregar funciones para bateria? [y/n] " yesno
         case $yesno in
-            [Yy]* ) sed -i 's/# upperbar="$upperbar$(dwm_battery)"/upperbar="$upperbar$(dwm_battery)"/' ~/.config/dwm/dwmbar/dwm_bar.sh; \
-                sed -i 's/# batdunst --status &/batdunst --status &' ~/.xprofile; break;;
+            [Yy]* ) sed -i 's/# upperbar="$upperbar$(dwm_battery)"/upperbar="$upperbar$(dwm_battery)"/' /home/"$user"/.config/dwm/dwmbar/dwm_bar.sh; \
+                sed -i 's/# batdunst --status &/batdunst --status &' /home/"$user"/.xprofile; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
         esac
@@ -134,12 +136,12 @@ ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
 add_battery || salir "no se pudo agregar funciones de bateria"
 
-sed -i "s/gerry/$user/" ~/.config/dunst/dunstrc
-sed -i "s/gerry/$user/" ~/.config/nvim/init.lua
+sed -i "s/gerry/$user/" /home/"$user"/.config/dunst/dunstrc
+sed -i "s/gerry/$user/" /home/"$user"/.config/nvim/init.lua
 
 echo -e "Adios a la campanita enfadosa"
 rmmod pcspkr
-echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf ;}
+echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
 
 # notificaciones de brave
 echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
