@@ -90,7 +90,7 @@ yay_installer() {
     yay -S --noconfirm "$1" >/dev/null 2>&1
 }
 
-git_instalador() { # algo falla aqui...
+git_installer() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
     echo -e "\nInstalando usando git y make. $(basename "$1") $2 ($n de $total)"
@@ -108,9 +108,9 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando dotfiles"
-                cd "/home/$user"
+                cd "$repodir"
                 git clone "$dotfiles"
-                cp -rf ".dotfiles/." "~"
+                cp -rfR ".dotfiles/." "~"
                 rm -rf ~/install.sh ~/.git ~/README.md; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
@@ -138,10 +138,6 @@ add_battery || salir "no se pudo agregar funciones de bateria"
 
 sed -i "s/gerry/$user/" /home/"$user"/.config/dunst/dunstrc
 sed -i "s/gerry/$user/" /home/"$user"/.config/nvim/init.lua
-
-echo -e "Adios a la campanita enfadosa"
-rmmod pcspkr
-echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
 
 # notificaciones de brave
 echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
