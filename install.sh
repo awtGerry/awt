@@ -65,7 +65,7 @@ instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
             "G") git_installer "$program" "$comment" ;;
             *) pacman_installer "$program" "$comment" ;;
         esac
-    done
+    done < /tmp/progs.csv
 }
 
 installyay() { # aur helper para instalar otros programas
