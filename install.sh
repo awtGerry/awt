@@ -190,4 +190,6 @@ sudo -u "$user" mkdir -p "/home/$user/.config/mpd/playlists/"
 # artix con runit
 # dbus-uuidgen > /var/lib/dbus/machine-id
 
+xwallpaper --zoom $HOME/.local/share/bg
+
 echo -e "Instalacion terminada :)"
