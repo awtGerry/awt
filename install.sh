@@ -156,7 +156,7 @@ install_packer() {
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando packer.nvim desde git by wbthomason"
-                git clone -depth 1 https://github.com/wbthomason/packer.nvim\
+                git clone --depth 1 https://github.com/wbthomason/packer.nvim\
                     ~/.local/share/nvim/site/pack/packer/start/packer.nvim
                 echo -e "Packer fue instalado correctamente"; break;;
             [Nn]* ) break;;
@@ -165,12 +165,13 @@ install_packer() {
     done
 }
 
-sudo pacman -Syy
+# sudo pacman -Syy
 ask_default_install || salir "no se pude completar la instalacion"
 ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
 add_battery || salir "no se pudo agregar funciones de bateria"
 install_sumneko_lua || salir "no se pudo instalar sumneko lua"
+install_packer || salir "no se pudo instalar packer.nvim"
 
 sed -i "s/gerry/$user/" /home/"$user"/.config/dunst/dunstrc
 sed -i "s/gerry/$user/" /home/"$user"/.config/nvim/init.lua
