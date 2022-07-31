@@ -108,9 +108,9 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando dotfiles"
-                cd "$repodir"
+                cd "/home/$user"
                 git clone "$dotfiles"
-                cp -rfR ".dotfiles/." "~"
+                sudo -u "$user" cp -rfT ".dotfiles/." "~"
                 rm -rf ~/install.sh ~/.git ~/README.md; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
