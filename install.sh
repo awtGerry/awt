@@ -145,7 +145,7 @@ install_sumneko_lua() {
                 ./3rd/luamake/compile/install.sh
                 ./3rd/luamake/luamake rebuild
                 ./bin/lua-language-server
-                echo -e "LSP de lua fue instalado correctamente"
+                echo -e "LSP de lua fue instalado correctamente"; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
         esac
