@@ -108,9 +108,8 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando dotfiles"
-                cd "/home/$user"
-                git clone "$dotfiles"
-                sudo -u "$user" cp -rfT ".dotfiles/." "~"
+                git clone --depth 1 "$dotfiles" "/home/$user"
+                sudo -u "$user" cp -rfT "/home/$user/.dotfiles/." "~"
                 rm -rf ~/install.sh ~/.git ~/README.md; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
@@ -133,7 +132,7 @@ add_battery() {
 
 install_sumneko_lua() {
     while true; do
-        read -p "> Desea instalar lsp de lua (necesario para neovim)? [y/n] " yesno
+        read -p "> Instalar lsp de lua? (necesario para neovim)? [y/n] " yesno
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando lua-language-server"
@@ -144,7 +143,6 @@ install_sumneko_lua() {
                 git submodule update --depth 1 --init --recursive
                 ./3rd/luamake/compile/install.sh
                 ./3rd/luamake/luamake rebuild
-                ./bin/lua-language-server
                 echo -e "LSP de lua fue instalado correctamente"; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
@@ -152,6 +150,22 @@ install_sumneko_lua() {
     done
 }
 
+install_packer() {
+    while true; do
+        read -p "> Instalar packer.nvim? (necesario para neovim)? [y/n] " yesno
+        case $yesno in
+            [Yy]* ) \
+                echo -e "Instalando packer.nvim desde git by wbthomason"
+                git clone -depth 1 https://github.com/wbthomason/packer.nvim\
+                    ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+                echo -e "Packer fue instalado correctamente"; break;;
+            [Nn]* ) break;;
+            * ) echo "Solo se acepta [y]es o [n]o";;
+        esac
+    done
+}
+
+sudo pacman -Syy
 ask_default_install || salir "no se pude completar la instalacion"
 ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
