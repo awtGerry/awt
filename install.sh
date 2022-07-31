@@ -137,7 +137,7 @@ install_sumneko_lua() {
             [Yy]* ) \
                 echo -e "Instalando lua-language-server"
                 lib="/home/$user/.local/lib"
-                mkdir -p lib; cd lib
+                mkdir -p "$lib"; cd "$lib"
                 git clone  --depth=1 https://github.com/sumneko/lua-language-server
                 cd lua-language-server
                 git submodule update --depth 1 --init --recursive
