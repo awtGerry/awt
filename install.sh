@@ -31,7 +31,7 @@ ask_default_install() { # programas necesarios
         read -p "> Desea instalar los programas basicos? [y/n] " yesno
         case $yesno in
             [Yy]* ) \
-                for x in curl ca-certificates base-devel git ntp zsh ; do
+                for x in curl ca-certificates base-devel git ntp zsh ninja; do
                     pacman_installer "$x" "programa basico para instalar o configurar otros programas";
                 done; break;;
             [Nn]* ) break;;
@@ -131,10 +131,32 @@ add_battery() {
     done
 }
 
+install_sumneko_lua() {
+    while true; do
+        read -p "> Desea instalar lsp de lua (necesario para neovim)? [y/n] " yesno
+        case $yesno in
+            [Yy]* ) \
+                echo -e "Instalando lua-language-server"
+                lib="/home/$user/.local/lib"
+                mkdir -p lib; cd lib
+                git clone --depth=1 https://github.com/sumneko/lua-language-server
+                cd lua-language-server
+                git submodule update --depth 1 --init --recursive
+                ./3rd/luamake/compile/install.sh
+                ./3rd/luamake/luamake rebuild
+                ./bin/lua-language-server
+                echo -e "LSP de lua fue instalado correctamente"
+            [Nn]* ) break;;
+            * ) echo "Solo se acepta [y]es o [n]o";;
+        esac
+    done
+}
+
 ask_default_install || salir "no se pude completar la instalacion"
 ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
 add_battery || salir "no se pudo agregar funciones de bateria"
+install_sumneko_lua || salir "no se pudo instalar sumneko lua"
 
 sed -i "s/gerry/$user/" /home/"$user"/.config/dunst/dunstrc
 sed -i "s/gerry/$user/" /home/"$user"/.config/nvim/init.lua
