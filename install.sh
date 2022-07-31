@@ -98,7 +98,7 @@ git_installer() {
     git clone $1
     cd "$dir" || exit 1
     make >/dev/null 2>&1
-    make install >/dev/null 2>&1
+    sudo make clean install >/dev/null 2>&1
     cd /tmp || return 1 ;
 }
 
@@ -107,7 +107,7 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
         read -p "> Instalar awtgerry dotfiles? (ten en cuenta que configuracion anterior se perdera) [y/n] " yesno
         case $yesno in
             [Yy]* ) \
-                echo -e "Instalando dotfiles"
+                echo -e "Instalando dotfiles..."
                 git clone --depth 1 "$dotfiles" "/home/$user"
                 sudo -u "$user" cp -rfT "/home/$user/.dotfiles/." "~"
                 rm -rf ~/install.sh ~/.git ~/README.md; break;;
@@ -123,7 +123,7 @@ add_battery() {
         read -p "> Desea agregar funciones para bateria? [y/n] " yesno
         case $yesno in
             [Yy]* ) sed -i 's/# upperbar="$upperbar$(dwm_battery)"/upperbar="$upperbar$(dwm_battery)"/' /home/"$user"/.config/dwm/dwmbar/dwm_bar.sh; \
-                sed -i 's/# batdunst --status &/batdunst --status &' /home/"$user"/.xprofile; break;;
+                sed -i 's/# batdunst --status/batdunst --status/' /home/"$user"/.xprofile; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
         esac
@@ -173,8 +173,8 @@ add_battery || salir "no se pudo agregar funciones de bateria"
 install_sumneko_lua || salir "no se pudo instalar sumneko lua"
 install_packer || salir "no se pudo instalar packer.nvim"
 
-sed -i "s/gerry/$user/" /home/"$user"/.config/dunst/dunstrc
-sed -i "s/gerry/$user/" /home/"$user"/.config/nvim/init.lua
+sed -i "s/user/$user/" /home/"$user"/.config/dunst/dunstrc
+sed -i "s/user/$user/" /home/"$user"/.config/nvim/init.lua
 
 # notificaciones de brave
 echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
