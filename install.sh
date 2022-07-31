@@ -158,7 +158,7 @@ install_packer() {
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando packer.nvim desde git by wbthomason"
-                git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+                sudo -u "$user" git clone --depth 1 https://github.com/wbthomason/packer.nvim\
                     /home/"$user"/.local/share/nvim/site/pack/packer/start/packer.nvim
                 echo -e "Packer fue instalado correctamente"; break;;
             [Nn]* ) break;;
