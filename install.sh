@@ -109,7 +109,7 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
             [Yy]* ) \
                 echo -e "Instalando dotfiles..."
                 git clone --depth 1 "$dotfiles" "/home/$user"
-                sudo -u "$user" cp -rfT "/home/$user/.dotfiles/." "~"
+                sudo -u "$user" cp -rfT "/home/$user/.dotfiles/". "/home/$user/".
                 rm -rf ~/install.sh ~/.git ~/README.md; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
@@ -122,8 +122,8 @@ add_battery() {
     while true; do
         read -p "> Desea agregar funciones para bateria? [y/n] " yesno
         case $yesno in
-            [Yy]* ) sed -i 's/# upperbar="$upperbar$(dwm_battery)"/upperbar="$upperbar$(dwm_battery)"/' /home/"$user"/.config/dwm/dwmbar/dwm_bar.sh; \
-                sed -i 's/# batdunst --status/batdunst --status/' /home/"$user"/.xprofile; break;;
+            [Yy]* ) sed -i 's/# upperbar="$upperbar$(dwm_battery)"/upperbar="$upperbar$(dwm_battery)"/' /home/"$user"/awesometimes/repos/dwmbar/dwm_bar.sh; \
+                sed -i 's/# batdunst/batdunst/' /home/"$user"/.xprofile; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
         esac
@@ -138,10 +138,12 @@ install_sumneko_lua() {
                 echo -e "Instalando lua-language-server"
                 lib="/home/$user/.local/lib"
                 mkdir -p lib; cd lib
-                git clone --depth=1 https://github.com/sumneko/lua-language-server
+                git clone  --depth=1 https://github.com/sumneko/lua-language-server
                 cd lua-language-server
                 git submodule update --depth 1 --init --recursive
-                ./3rd/luamake/compile/install.sh
+                cd 3rd/luamake
+                ./compile/install.sh
+                cd ../..
                 ./3rd/luamake/luamake rebuild
                 echo -e "LSP de lua fue instalado correctamente"; break;;
             [Nn]* ) break;;
@@ -157,7 +159,7 @@ install_packer() {
             [Yy]* ) \
                 echo -e "Instalando packer.nvim desde git by wbthomason"
                 git clone --depth 1 https://github.com/wbthomason/packer.nvim\
-                    ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+                    /home/"$user"/.local/share/nvim/site/pack/packer/start/packer.nvim
                 echo -e "Packer fue instalado correctamente"; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
