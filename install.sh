@@ -1,10 +1,13 @@
 #!/bin/sh
 
-echo -e "Instalador de dotfiles y programas para arch/artix linux"
-echo -e "## Para que el instalador funcione por completo tiene que ser ejecutado con permisos de root ##"
-
 dotfiles="https://github.com/awtGerry/.dotfiles"
 programas="https://raw.githubusercontent.com/awtGerry/awt/master/programas.csv"
+welcome="https://raw.githubusercontent.com/awtGerry/awt/master/welcome.txt"
+
+([ -f "$welcome" ] && cp "$welcome" /tmp/welcome.txt) || curl -Ls "$welcome" | sed '/^#/d' > /tmp/welcome.txt
+cat welcome.txt
+echo -e "Instalador de dotfiles y programas para arch/artix linux"
+echo -e "## Para que el instalador funcione por completo tiene que ser ejecutado con permisos de root ##"
 
 # Usuario ingresa nombre y contrasena
 # TODO: implementar esto para que sea desde una instalacion en blanco de arch.
@@ -13,9 +16,6 @@ read user
 echo -e "> Ingrese contraseña [sudo] de $user: \c"
 read -s pass
 echo ""
-sudo -u "$user" mkdir -p "/home/$user/.cache/zsh"
-sudo -u "$user" mkdir -p "/home/$user/.cache/nvim/undodir"
-
 # add_user_pass() { # pregunta si el usuario quiere agregar user y pass (para instalacion en blanco)
 # }
 
@@ -53,6 +53,7 @@ ask_install() { # Preguntar si se debe instalar programas
 
 instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
     # primero instalar yay como aur helper
+    sudo pacman -Syy
     installyay || salir "No se pudo instalar yay"
     ([ -f "$programas" ] && cp "$programas" /tmp/programas.csv) || curl -Ls "$programas" | sed '/^#/d' > /tmp/programas.csv
     total=$(wc -l < /tmp/programas.csv)
@@ -73,8 +74,9 @@ installyay() { # aur helper para instalar otros programas
     echo -e "Instalando yay desde la AUR"
     export repodir="/home/$user/awesometimes/repos"; mkdir -p "$repodir"
     cd "$repodir" || exit 1
-    git clone "https://aur.archlinux.org/yay.git"
-    cd yay; makepkg --noconfirm -si >/dev/null 2>&1
+    sudo -u "$user" git clone "https://aur.archlinux.org/yay.git"
+    cd yay
+    sudo -u "$user" makepkg --noconfirm -si >/dev/null 2>&1
     echo -e "yay descargado satisfactoriamente."
     echo ""
 }
@@ -95,10 +97,10 @@ git_installer() {
     dir="$repodir/$progname"
     echo -e "\nInstalando usando git y make. $(basename "$1") $2 ($n de $total)"
     cd "$repodir";
-    git clone $1
+    sudo -u "$user" git clone $1
     cd "$dir" || exit 1
     make >/dev/null 2>&1
-    sudo make clean install >/dev/null 2>&1
+    make clean install >/dev/null 2>&1
     cd /tmp || return 1 ;
 }
 
@@ -110,7 +112,8 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
                 echo -e "Instalando dotfiles..."
                 git clone --depth 1 "$dotfiles" "/home/$user"
                 sudo -u "$user" cp -rfT "/home/$user/.dotfiles/". "/home/$user/".
-                rm -rf ~/install.sh ~/.git ~/README.md; break;;
+                rm -rf /home/"$user"/install.sh /home/"$user"/.git /home/"$user"/README.md \
+                    /home/"$user"/.gitignore; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
         esac
@@ -167,7 +170,6 @@ install_packer() {
     done
 }
 
-# sudo pacman -Syy
 ask_default_install || salir "no se pude completar la instalacion"
 ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
@@ -177,10 +179,14 @@ install_packer || salir "no se pudo instalar packer.nvim"
 
 sed -i "s/user/$user/" /home/"$user"/.config/dunst/dunstrc
 sed -i "s/user/$user/" /home/"$user"/.config/nvim/init.lua
+sudo -u "$user" mkdir -p "/home/$user/.cache/zsh"
+sudo -u "$user" mkdir -p "/home/$user/.cache/nvim/undodir"
 
 # notificaciones de brave
 echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
 
+grep -q "ILoveCandy" /etc/pacman.conf || sed -i "/#VerbosePkgLists/a ILoveCandy" /etc/pacman.conf
+sed -Ei "s/^#(ParallelDownloads).*/\1 = 5/;/^#Color$/s/#//" /etc/pacman.conf
 # zsh como shell
 chsh -s /bin/zsh "$user" >/dev/null 2>&1
 sudo -u "$user" mkdir -p "/home/$user/.cache/zsh/"
@@ -190,6 +196,6 @@ sudo -u "$user" mkdir -p "/home/$user/.config/mpd/playlists/"
 # artix con runit
 # dbus-uuidgen > /var/lib/dbus/machine-id
 
-xwallpaper --zoom $HOME/.local/share/bg
+sudo -u "$user" xwallpaper --zoom /home/"$user"/.local/share/bg
 
 echo -e "Instalacion terminada :)"
