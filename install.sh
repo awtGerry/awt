@@ -31,7 +31,7 @@ ask_default_install() { # programas necesarios
         read -p "> Desea instalar los programas basicos? [y/n] " yesno
         case $yesno in
             [Yy]* ) \
-                for x in curl ca-certificates base-devel git ntp zsh ninja; do
+                for x in curl ca-certificates base-devel git ntp zsh ninja gcc; do
                     pacman_installer "$x" "programa basico para instalar o configurar otros programas";
                 done; break;;
             [Nn]* ) break;;
@@ -73,7 +73,7 @@ instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
 installyay() { # aur helper para instalar otros programas
     echo -e "Instalando yay desde la AUR"
     export repodir="/home/$user/awesometimes/repos"; mkdir -p "$repodir"
-    cd "$repodir" || exit 1
+    cd "$repodir" || salir "no se pudo crear carpeta de repositorios"
     sudo -u "$user" git clone "https://aur.archlinux.org/yay.git"
     cd yay
     sudo -u "$user" makepkg --noconfirm -si >/dev/null 2>&1
@@ -110,7 +110,7 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando dotfiles..."
-                sudo -u "$user" git clone --depth 1 "$dotfiles" "/home/$user"
+                sudo -u "$user" git clone --depth 1 "$dotfiles" "/home/$user/.dotfiles"
                 sudo -u "$user" cp -rfT "/home/$user/.dotfiles/". "/home/$user/".
                 rm -rf /home/"$user"/install.sh /home/"$user"/.git /home/"$user"/README.md \
                     /home/"$user"/.gitignore; break;;
