@@ -5,7 +5,7 @@ programas="https://raw.githubusercontent.com/awtGerry/awt/master/programas.csv"
 welcome="https://raw.githubusercontent.com/awtGerry/awt/master/welcome.txt"
 
 ([ -f "$welcome" ] && cp "$welcome" /tmp/welcome.txt) || curl -Ls "$welcome" | sed '/^#/d' > /tmp/welcome.txt
-cat welcome.txt
+cat /tmp/welcome.txt
 echo -e "Instalador de dotfiles y programas para arch/artix linux"
 echo -e "## Para que el instalador funcione por completo tiene que ser ejecutado con permisos de root ##"
 
