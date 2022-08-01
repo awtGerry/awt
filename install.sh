@@ -110,7 +110,7 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
         case $yesno in
             [Yy]* ) \
                 echo -e "Instalando dotfiles..."
-                git clone --depth 1 "$dotfiles" "/home/$user"
+                sudo -u "$user" git clone --depth 1 "$dotfiles" "/home/$user"
                 sudo -u "$user" cp -rfT "/home/$user/.dotfiles/". "/home/$user/".
                 rm -rf /home/"$user"/install.sh /home/"$user"/.git /home/"$user"/README.md \
                     /home/"$user"/.gitignore; break;;
