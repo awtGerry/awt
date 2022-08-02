@@ -32,7 +32,7 @@ ask_default_install() { # programas necesarios
         case $yesno in
             [Yy]* ) \
                 for x in curl ca-certificates base-devel git ntp zsh ninja gcc; do
-                    pacman_installer "$x" "programa basico para instalar o configurar otros programas";
+                    simple_intall "$x";
                 done; break;;
             [Nn]* ) break;;
             * ) echo "Solo se acepta [y]es o [n]o";;
@@ -81,13 +81,18 @@ installyay() { # aur helper para instalar otros programas
     echo ""
 }
 
+simple_intall() {
+    echo -e "Instalando \`\033[1m$1\033[0m\`"
+    pacman --noconfirm --needed -S "$1" >/dev/null 2>&1
+}
+
 pacman_installer() {
-    echo -e "\nInstalando \`\033[1m$1\033[0m\` $2 ($n de $total)" # 1 programa # 2 comment
+    echo -e "Instalando \`\033[1m$1\033[0m\` $2 ($n de $total)" # 1 programa # 2 comment
     pacman --noconfirm --needed -S "$1" >/dev/null 2>&1
 }
 
 yay_installer() {
-    echo -e "\nInstalando desde la AUR \`\033[1m$1\033[0m\` $2 ($n de $total)"
+    echo -e "Instalando desde la AUR \`\033[1m$1\033[0m\` $2 ($n de $total)"
     echo "$aur_installed" | grep -q "^$1$" && return 1
     yay -S --noconfirm "$1" >/dev/null 2>&1
 }
@@ -133,17 +138,63 @@ add_battery() {
     done
 }
 
-install_sumneko_lua() {
+ask_developer() {
+    echo "\n## Herramientas de desarrollador ##"
+    echo "Para que neovim funcione al 100% se necesitan descargar ciertas cosas"
     while true; do
-        read -p "> Instalar lsp de lua? (necesario para neovim)? [y/n] " yesno
+        read -p "> Instalar herramientas de desarrollador? [y/n] " yesno
+        case $yesno in
+            [Yy]* ) dev_choice="yes"; break;;
+            [Nn]* ) dev_choice="no"; break;;
+            * ) echo "Solo se acepta [y]es o [n]o";;
+        esac
+    done
+}
+
+install_devtools() {
+    lib="/home/$user/.local/lib"
+    sudo -u "$user" mkdir -p "$lib"
+    for x in llvm clang rubygems; do
+        simple_intall "$x";
+    done
+
+    echo "Instalando typescript-language-server..."
+    npm install -g typescript-language-server typescript; break;;
+
+    echo "Instalando html y css language server..."
+    npm i -g vscode-langservers-extracted
+
+    echo -e "Instalando rustup..."
+    sudo -u "$user" curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    echo -e "Instalando rust language server..."
+    rustup component add rls rust-analysis rust-src
+
+    echo -e "Instalando solargraph"
+    gem install solargraph
+
+    while true; do
+        read -p "> Instalar packer.nvim? (necesario para neovim)? [y/n] " yesno
         case $yesno in
             [Yy]* ) \
-                echo -e "Instalando lua-language-server"
-                lib="/home/$user/.local/lib"
-                mkdir -p "$lib"; cd "$lib"
-                git clone  --depth=1 https://github.com/sumneko/lua-language-server
+                echo -e "Instalando packer.nvim desde git by wbthomason"
+                sudo -u "$user" git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+                    /home/"$user"/.local/share/nvim/site/pack/packer/start/packer.nvim
+                echo -e "Packer fue instalado correctamente"; break;;
+
+            [Nn]* ) break;;
+            * ) echo "Solo se acepta [y]es o [n]o";;
+        esac
+    done
+
+    while true; do
+        read -p "> Instalar sumneko_lua? [Y/n] " yesno
+        case $yesno in
+            [Yy]* ) \
+                echo -e "Instalando lua language server"
+                cd "$lib"
+                sudo -u "$user" git clone  --depth=1 https://github.com/sumneko/lua-language-server
                 cd lua-language-server
-                git submodule update --depth 1 --init --recursive
+                sudo -u "$user" git submodule update --depth 1 --init --recursive
                 cd 3rd/luamake
                 ./compile/install.sh
                 cd ../..
@@ -155,27 +206,16 @@ install_sumneko_lua() {
     done
 }
 
-install_packer() {
-    while true; do
-        read -p "> Instalar packer.nvim? (necesario para neovim)? [y/n] " yesno
-        case $yesno in
-            [Yy]* ) \
-                echo -e "Instalando packer.nvim desde git by wbthomason"
-                sudo -u "$user" git clone --depth 1 https://github.com/wbthomason/packer.nvim\
-                    /home/"$user"/.local/share/nvim/site/pack/packer/start/packer.nvim
-                echo -e "Packer fue instalado correctamente"; break;;
-            [Nn]* ) break;;
-            * ) echo "Solo se acepta [y]es o [n]o";;
-        esac
-    done
-}
-
 ask_default_install || salir "no se pude completar la instalacion"
 ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
 add_battery || salir "no se pudo agregar funciones de bateria"
-install_sumneko_lua || salir "no se pudo instalar sumneko lua"
-install_packer || salir "no se pudo instalar packer.nvim"
+
+# Herramientas de desarrollador
+ask_developer || salir "programa finalizado por el usuario"
+if [[ "$dev_choice" == "yes" ]]; then
+    install_devtools || salir "no se pudo instalar herramientas de desarrollador"
+fi
 
 sed -i "s/user/$user/" /home/"$user"/.config/dunst/dunstrc
 sed -i "s/user/$user/" /home/"$user"/.config/nvim/init.lua
@@ -198,4 +238,4 @@ sudo -u "$user" mkdir -p "/home/$user/.config/mpd/playlists/"
 
 sudo -u "$user" xwallpaper --zoom /home/"$user"/.local/share/bg
 
-echo -e "Instalacion terminada :)"
+echo -e "\nInstalacion terminada :)"
