@@ -19,14 +19,14 @@ echo ""
 # add_user_pass() { # pregunta si el usuario quiere agregar user y pass (para instalacion en blanco)
 # }
 
-salir() { # si hay un error salir recibiendo un mensaje de donde surgio el error
+function salir() { # si hay un error salir recibiendo un mensaje de donde surgio el error
           # NOTE: prob temporal solo para ver en donde puede haber errores
     printf "%s\n" "$1" >&2;
     exit 1;
 }
 
-# Funciones de instaladores de programas (git,pacman,yay)
-ask_default_install() { # programas necesarios
+# Funciones de instaladores de programas
+function ask_default_install() { # programas necesarios
     while true; do
         read -p "> Desea instalar los programas basicos? [y/n] " yesno
         case $yesno in
@@ -40,7 +40,7 @@ ask_default_install() { # programas necesarios
     done
 }
 
-ask_install() { # Preguntar si se debe instalar programas
+function ask_install() { # Preguntar si se debe instalar programas
     while true; do
         read -p "> Desea instalar todos los programas? [y/n] " yesno
         case $yesno in
@@ -51,7 +51,7 @@ ask_install() { # Preguntar si se debe instalar programas
     done
 }
 
-instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
+function instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
     # primero instalar yay como aur helper
     sudo pacman -Syy
     installyay || salir "No se pudo instalar yay"
@@ -70,7 +70,7 @@ instalador() { # loop para instalar codigo sacado de larbs de Luke Smith
     done < /tmp/programas.csv ;
 }
 
-installyay() { # aur helper para instalar otros programas
+function installyay() { # aur helper para instalar otros programas
     echo -e "Instalando yay desde la AUR"
     export repodir="/home/$user/awesometimes/repos"; mkdir -p "$repodir"
     cd "$repodir" || salir "no se pudo crear carpeta de repositorios"
@@ -81,23 +81,22 @@ installyay() { # aur helper para instalar otros programas
     echo ""
 }
 
-simple_intall() {
+function simple_intall() {
     echo -e "Instalando \`\033[1m$1\033[0m\`"
     pacman --noconfirm --needed -S "$1" >/dev/null 2>&1
 }
 
-pacman_installer() {
+function pacman_installer() {
     echo -e "Instalando \`\033[1m$1\033[0m\` $2 ($n de $total)" # 1 programa # 2 comment
     pacman --noconfirm --needed -S "$1" >/dev/null 2>&1
 }
 
-yay_installer() {
+function yay_installer() {
     echo -e "Instalando desde la AUR \`\033[1m$1\033[0m\` $2 ($n de $total)"
-    echo "$aur_installed" | grep -q "^$1$" && return 1
     yay -S --noconfirm "$1" >/dev/null 2>&1
 }
 
-git_installer() {
+function git_installer() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
     echo -e "\nInstalando usando git y make. $(basename "$1") $2 ($n de $total)"
@@ -109,7 +108,7 @@ git_installer() {
     cd /tmp || return 1 ;
 }
 
-dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
+function dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
     while true; do
         read -p "> Instalar awtgerry dotfiles? (ten en cuenta que configuracion anterior se perdera) [y/n] " yesno
         case $yesno in
@@ -126,7 +125,7 @@ dotfiles_install() { # Descarga e instala los dotfiles de mi perfil
 }
 
 # Funciones para mostrar estado de bateria para laptops
-add_battery() {
+function add_battery() {
     while true; do
         read -p "> Desea agregar funciones para bateria? [y/n] " yesno
         case $yesno in
@@ -138,7 +137,7 @@ add_battery() {
     done
 }
 
-ask_developer() {
+function ask_developer() {
     echo "\n## Herramientas de desarrollador ##"
     echo "Para que neovim funcione al 100% se necesitan descargar ciertas cosas"
     while true; do
@@ -151,15 +150,15 @@ ask_developer() {
     done
 }
 
-install_devtools() {
+function install_devtools() {
     lib="/home/$user/.local/lib"
     sudo -u "$user" mkdir -p "$lib"
-    for x in llvm clang rubygems; do
+    for x in llvm clang npm rubygems; do
         simple_intall "$x";
     done
 
     echo "Instalando typescript-language-server..."
-    npm install -g typescript-language-server typescript; break;;
+    npm install -g typescript-language-server typescript
 
     echo "Instalando html y css language server..."
     npm i -g vscode-langservers-extracted
@@ -206,6 +205,16 @@ install_devtools() {
     done
 }
 
+function compile_packer() {
+    while true; do
+        read -p "> compile? [Y/n] " yesno
+        case $yesno in
+            [Yy]* ) /usr/bin/nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'; break;;
+            * ) break;;
+        esac
+    done
+}
+
 ask_default_install || salir "no se pude completar la instalacion"
 ask_install || salir "programa finalizado por el usuario"
 dotfiles_install || salir "no se pudo descargar dotfiles"
@@ -227,6 +236,7 @@ echo "export \$(dbus-launch)" > /etc/profile.d/dbus.sh
 
 grep -q "ILoveCandy" /etc/pacman.conf || sed -i "/#VerbosePkgLists/a ILoveCandy" /etc/pacman.conf
 sed -Ei "s/^#(ParallelDownloads).*/\1 = 5/;/^#Color$/s/#//" /etc/pacman.conf
+
 # zsh como shell
 chsh -s /bin/zsh "$user" >/dev/null 2>&1
 sudo -u "$user" mkdir -p "/home/$user/.cache/zsh/"
