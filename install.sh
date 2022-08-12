@@ -244,7 +244,7 @@ sudo -u "$user" mkdir -p "/home/$user/.config/abook/"
 sudo -u "$user" mkdir -p "/home/$user/.config/mpd/playlists/"
 
 # artix con runit
-# dbus-uuidgen > /var/lib/dbus/machine-id
+dbus-uuidgen > /var/lib/dbus/machine-id
 
 sudo -u "$user" xwallpaper --zoom /home/"$user"/.local/share/bg
 
